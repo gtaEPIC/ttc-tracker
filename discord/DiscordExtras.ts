@@ -1,7 +1,7 @@
 import {Guild} from "discord.js";
 import {REST} from "@discordjs/rest";
 import {commands} from "./Events/InteractionCreated";
-import {client} from "../backend";
+import {client} from "../index";
 import {Routes} from "discord-api-types/v9";
 
 

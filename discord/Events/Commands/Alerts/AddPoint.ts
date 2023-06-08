@@ -1,13 +1,7 @@
 import Commands from "../Commands";
-import {
-    ActionRowBuilder,
-    SlashCommandBuilder,
-    SlashCommandNumberOption,
-    SlashCommandStringOption
-} from "@discordjs/builders";
-import {CommandInteraction, MessageActionRow, MessageButton, MessageEmbed} from "discord.js";
-import {MessageButtonStyles} from "discord.js/typings/enums";
-import Alerts, {AlertType, AlertTypeNames} from "../../../../backend/SQL/Alerts";
+import {SlashCommandBuilder, SlashCommandStringOption} from "@discordjs/builders";
+import {ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder} from "discord.js";
+import Alerts, {AlertType, AlertTypeNames} from "../../../../SQL/Alerts";
 import {randomUUID} from "crypto";
 
 export default class AddPoint extends Commands {
@@ -40,7 +34,7 @@ export default class AddPoint extends Commands {
         let id = args.id;
         let update: string = args.update;
         if (update.length > 150) {
-            let embed: MessageEmbed = new MessageEmbed();
+            let embed: EmbedBuilder = new EmbedBuilder();
             embed.setColor("#ff0000");
             embed.setTitle("Update too long.");
             embed.setDescription("Please make sure your update is less than 150 characters.");
@@ -53,7 +47,7 @@ export default class AddPoint extends Commands {
         }
         let newSeverity: AlertType = <AlertType>parseInt(args.new_severity);
         let alert: Alerts = await Alerts.get(parseInt(id));
-        let embed: MessageEmbed = new MessageEmbed();
+        let embed: EmbedBuilder = new EmbedBuilder();
         if (!alert) {
             embed.setColor("#ff0000");
             embed.setTitle("Event not found.")
@@ -69,19 +63,21 @@ export default class AddPoint extends Commands {
             `Misuse of this command may result in a ban or a ban from these commands.\n` +
             `Please make sure there is no cuss words and that this information is correct.\n` +
             `If you need to change the information, click \`Dismiss this message\` and then run the command again.`);
-        embed.addField("ID", id);
-        embed.addField("Update", update);
-        if (args.new_severity !== undefined) embed.addField("New Severity", AlertTypeNames[newSeverity]);
-        let messageButton: MessageButton = new MessageButton();
+        embed.addFields({name: "ID", value: id});
+        embed.addFields({name: "Update", value: update});
+        if (args.new_severity !== undefined) embed.addFields({name: "New Severity", value: AlertTypeNames[newSeverity]});
+        let messageButton: ButtonBuilder = new ButtonBuilder();
         let holdData = {key: randomUUID(), id: id, update: update, newSeverity: newSeverity};
         messageButton.setCustomId("confirmPoint+=+" + holdData.key);
         messageButton.setLabel("Confirm");
-        messageButton.setStyle(MessageButtonStyles.PRIMARY);
+        messageButton.setStyle(ButtonStyle.Primary);
         AddPoint.pointHold.push(holdData);
+        let actionRow: ActionRowBuilder<ButtonBuilder> = new ActionRowBuilder<ButtonBuilder>();
+        actionRow.addComponents(messageButton);
         interaction.reply({
             embeds: [embed],
-            components: [new MessageActionRow().addComponents(messageButton)],
-            ephemeral: true
+            components: [actionRow],
+            ephemeral: true,
         }).then();
     }
 

@@ -1,5 +1,5 @@
 import Buttons from "../Buttons";
-import {ButtonInteraction, Message, MessageButton} from "discord.js";
+import {ButtonBuilder, ButtonInteraction, ButtonStyle, Message} from "discord.js";
 import {Garbage, NTAS} from "../../Commands/Tracker/NTAS";
 
 export class UpdateNTAS extends Buttons {
@@ -19,11 +19,11 @@ export class UpdateNTAS extends Buttons {
         }
     }
 
-    static discordButton(): MessageButton {
-        return new MessageButton()
+    static discordButton(): ButtonBuilder {
+        return new ButtonBuilder()
             .setCustomId("update-ntas")
             .setLabel("Update")
-            .setStyle("PRIMARY");
+            .setStyle(ButtonStyle.Primary);
     }
 
 }

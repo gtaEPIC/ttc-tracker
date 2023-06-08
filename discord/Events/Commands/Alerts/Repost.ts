@@ -1,8 +1,7 @@
 import Commands from "../Commands";
 import {SlashCommandBuilder} from "@discordjs/builders";
 import {CommandInteraction} from "discord.js";
-import {AlertHandler} from "../../../../backend/SQL/Alerts";
-import {client} from "../../../../backend";
+import {AlertHandler} from "../../../../SQL/Alerts";
 
 export default class Repost extends Commands {
     commandName: string = "repost";

@@ -1,6 +1,6 @@
 import Buttons from "../Buttons";
-import {ButtonInteraction, MessageEmbed} from "discord.js";
-import Alerts, {AlertType} from "../../../../backend/SQL/Alerts";
+import {ButtonInteraction, EmbedBuilder} from "discord.js";
+import Alerts, {AlertType} from "../../../../SQL/Alerts";
 import AddPoint from "../../Commands/Alerts/AddPoint";
 
 export class ConfirmPoint extends Buttons {
@@ -13,7 +13,7 @@ export class ConfirmPoint extends Buttons {
         let update: string = data.update;
         let newSeverity: AlertType = data.newSeverity;
         let alert: Alerts = await Alerts.get(parseInt(id));
-        let embed: MessageEmbed = new MessageEmbed();
+        let embed: EmbedBuilder = new EmbedBuilder();
         if (!alert) {
             embed.setColor("#ff0000");
             embed.setTitle("Event not found");
@@ -23,9 +23,9 @@ export class ConfirmPoint extends Buttons {
         await alert.newPoint(update, `<@${interaction.user.id}>`, newSeverity)
         embed.setTitle("Point Added");
         embed.setDescription(`A new point has been added:`);
-        embed.addField("ID", id);
-        embed.addField("update", update);
-        embed.addField("ID", alert.Alert_ID.toString());
+        embed.addFields({name: "ID", value: id});
+        embed.addFields({name: "update", value: update});
+        embed.addFields({name: "ID", value: alert.Alert_ID.toString()});
         embed.setColor("#00ff00");
         interaction.reply({
             embeds: [embed],

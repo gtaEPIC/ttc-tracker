@@ -1,8 +1,7 @@
 import Commands from "../Commands";
 import {SlashCommandBuilder, SlashCommandStringOption} from "@discordjs/builders";
-import {MessageActionRow, MessageButton, MessageEmbed} from "discord.js";
+import {ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder} from "discord.js";
 import {randomUUID} from "crypto";
-import {MessageButtonStyles} from "discord.js/typings/enums";
 
 export default class SlowZone extends Commands {
     commandName: string = "slowzone";
@@ -27,7 +26,7 @@ export default class SlowZone extends Commands {
     execute(interaction, args) {
         let line = args.line;
         if (line.length > 50) {
-            let embed: MessageEmbed = new MessageEmbed();
+            let embed: EmbedBuilder = new EmbedBuilder();
             embed.setColor("#ff0000");
             embed.setTitle("Line too long.");
             embed.setDescription("Please make sure your line is less than 50 characters.");
@@ -40,7 +39,7 @@ export default class SlowZone extends Commands {
         }
         let location = args.location;
         if (location.length > 150) {
-            let embed: MessageEmbed = new MessageEmbed();
+            let embed: EmbedBuilder = new EmbedBuilder();
             embed.setColor("#ff0000");
             embed.setTitle("Location too long.");
             embed.setDescription("Please make sure your location is less than 150 characters.");
@@ -52,20 +51,20 @@ export default class SlowZone extends Commands {
             });
         }
         // 30 minutes in milliseconds = 1800000
-        let embed = new MessageEmbed();
+        let embed = new EmbedBuilder();
         embed.setColor("#ffff00");
         embed.setTitle("Confirm slow zone");
         embed.setDescription(`Please confirm that you want to create a slow zone with the following information\n`);
-        embed.addField("Line", line);
-        embed.addField("Location", location);
-        embed.addField("Duration", "30 minutes (can't be changed)");
+        embed.addFields({name: "Line", value: line});
+        embed.addFields({name: "Location", value: location});
+        embed.addFields({name: "Duration", value: "30 minutes (can't be changed)"});
         let toHold = {key: randomUUID(), line: line, location: location};
         SlowZone.slowHolds.push(toHold);
-        let messageButton = new MessageButton()
+        let messageButton = new ButtonBuilder()
             .setCustomId('confirmslow+=+' + toHold.key)
             .setLabel('Confirm')
-            .setStyle(MessageButtonStyles.PRIMARY);
-        interaction.reply({embeds: [embed], components: [new MessageActionRow().addComponents(messageButton)], ephemeral: true}).then();
+            .setStyle(ButtonStyle.Primary);
+        interaction.reply({embeds: [embed], components: [new ActionRowBuilder<ButtonBuilder>().addComponents(messageButton)], ephemeral: true}).then();
     }
 
 }

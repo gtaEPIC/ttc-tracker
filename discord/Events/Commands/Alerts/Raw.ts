@@ -1,7 +1,6 @@
 import {SlashCommandBuilder} from "@discordjs/builders";
 import Commands from "../Commands";
-import {CommandInteraction, MessageEmbed} from "discord.js";
-import {AlertHandler} from "../../../../backend/SQL/Alerts";
+import {CommandInteraction} from "discord.js";
 import axios from "axios";
 
 export default class Raw extends Commands {

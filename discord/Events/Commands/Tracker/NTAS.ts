@@ -1,8 +1,8 @@
 import {SlashCommandBuilder, SlashCommandStringOption} from "@discordjs/builders";
 import Commands from "../Commands";
-import {CommandInteraction, Emoji, Guild, Message, MessageActionRow, MessageEmbed} from "discord.js";
+import {CommandInteraction, Emoji, Guild, Message, ActionRowBuilder, EmbedBuilder, ButtonBuilder} from "discord.js";
 import {DiscordFetchHelpers} from "../../../DiscordFetchHelper";
-import {client} from "../../../../backend";
+import {client} from "../../../../index";
 import axios from "axios";
 import {UpdateNTAS} from "../../Buttons/Tracker/UpdateNTAS";
 
@@ -67,7 +67,7 @@ export class NTAS extends Commands {
                 break;
             }
         }
-        let messageEmbed: MessageEmbed = new MessageEmbed();
+        let messageEmbed: EmbedBuilder = new EmbedBuilder();
         messageEmbed.setTitle("Next Train Arrival");
         messageEmbed.setDescription("The next train arrival for " + station.toUpperCase() + " is:");
         for (let code of stationCode) {
@@ -108,10 +108,10 @@ export class NTAS extends Commands {
             // if (count > 30) return;
             // setTimeout(this.updateMessage, 20000, interaction, station, stationCode, message, count + 1);
         }
-        messageEmbed.footer = {
+        messageEmbed.setFooter({
             text: count >= 30 ? "Auto Updated disabled. Press the update button to continue." : "Auto updating every 20 seconds.",
-        };
-        await message.edit({embeds: [messageEmbed], content: null, components: [new MessageActionRow().addComponents(UpdateNTAS.discordButton())]});
+        });
+        await message.edit({embeds: [messageEmbed], content: null, components: [new ActionRowBuilder<ButtonBuilder>().addComponents(UpdateNTAS.discordButton())]});
     }
 
     static update() {

@@ -1,7 +1,6 @@
 import Buttons from "../Buttons";
-import {ButtonInteraction, MessageEmbed} from "discord.js";
-import Alerts, {AlertType} from "../../../../backend/SQL/Alerts";
-import MajorEvents from "../../Commands/Alerts/MajorEvents";
+import {ButtonInteraction, EmbedBuilder} from "discord.js";
+import Alerts, {AlertType} from "../../../../SQL/Alerts";
 import MinorEvent from "../../Commands/Alerts/MinorEvent";
 
 export class ConfirmMinor extends Buttons {
@@ -15,13 +14,13 @@ export class ConfirmMinor extends Buttons {
         let firstPoint: string = hold.firstPoint;
         let alert: Alerts = await Alerts.new(AlertType.MINOR, situation, new Date(), null, `<@${interaction.user.id}>`,
             firstPoint, line);
-        let embed: MessageEmbed = new MessageEmbed();
+        let embed: EmbedBuilder = new EmbedBuilder();
         embed.setTitle("Minor Event Created");
         embed.setDescription(`A minor event has been created with the following information:\n\n`);
-        embed.addField("Line", line);
-        embed.addField("Situation", situation);
-        if (firstPoint) embed.addField("First Point", firstPoint);
-        embed.addField("ID", alert.Alert_ID.toString());
+        embed.addFields({name: "Line", value: line});
+        embed.addFields({name: "Situation", value: situation});
+        if (firstPoint) embed.addFields({name: "First Point", value: firstPoint});
+        embed.addFields({name: "ID", value: alert.Alert_ID.toString()});
         embed.setColor("#00ff00");
         interaction.reply({
             embeds: [embed],
