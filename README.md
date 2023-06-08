@@ -93,3 +93,7 @@ Updates to this project will be used in the T2P Films server.<br>
 - [ ] Add Line 1 and 4 to NTAS (Issue to be made)
 - [ ] Add a vehicle tracker (Issue to be made)
 - [ ] Add a next bus tracker (Issue to be made)
+
+# Contact
+Since this bot is intended for the T2P Films server, you can contact me there.<br>
+[Discord invite](https://discord.gg/uC9upRK3gX)<br>
