@@ -90,9 +90,9 @@ There are no tests for this project, so please make sure to test your changes th
 Updates to this project will be used in the T2P Films server.<br>
 
 ## Planned Features
-- [ ] Add Line 1 and 4 to NTAS (#1 https://github.com/gtaEPIC/ttc-tracker/issues/1)
-- [ ] Add a vehicle tracker (#2 https://github.com/gtaEPIC/ttc-tracker/issues/2)
-- [ ] Add a next bus tracker (#3 https://github.com/gtaEPIC/ttc-tracker/issues/3)
+- [ ] Add Line 1 and 4 to NTAS (https://github.com/gtaEPIC/ttc-tracker/issues/1)
+- [ ] Add a vehicle tracker (https://github.com/gtaEPIC/ttc-tracker/issues/2)
+- [ ] Add a next bus tracker (https://github.com/gtaEPIC/ttc-tracker/issues/3)
 
 # Contact
 Since this bot is intended for the T2P Films server, you can contact me there.<br>
