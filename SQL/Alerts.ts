@@ -1,10 +1,9 @@
 import {SQLManager} from "./SQLManager";
-import {Guild, GuildEmoji, Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel} from "discord.js";
-import {DiscordFetchHelpers} from "../../discord/DiscordFetchHelper";
+import {Guild, GuildEmoji, Message, TextChannel, EmbedBuilder} from "discord.js";
+import {DiscordFetchHelpers} from "../discord/DiscordFetchHelper";
 import {client} from "../index";
 import axios from "axios";
 import {formatArray} from "../Extras";
-import {MessageButtonStyles} from "discord.js/typings/enums";
 
 export enum AlertType {
     CLEARED,
@@ -238,11 +237,11 @@ export class AlertHandler {
         // if (this.initialized) return;
         this.guild = await DiscordFetchHelpers.findGuild(client, process.env.EVENTS_GUILD);
         this.channel = <TextChannel>await DiscordFetchHelpers.findChannel(client, this.guild, process.env.EVENTS_CHANNEL);
-        let embed: MessageEmbed = new MessageEmbed();
+        let embed: EmbedBuilder = new EmbedBuilder()
         embed.setTitle("Alerts");
         embed.setDescription("TTC Alerts initializing...");
-        embed.setColor("RED");
-        embed.footer = {text: "Bot is getting things ready..."};
+        embed.setColor("#FF0000");
+        embed.setFooter({text: "Bot is getting things ready..."});
         this.message = await this.channel.send({embeds: [embed]});
 
         this.greenL = await DiscordFetchHelpers.getGuildEmoji(client, this.guild, process.env.GREEN);
@@ -280,7 +279,7 @@ export class AlertHandler {
         for (let msg of this.extraMessages) {
             if (!msg.message) continue;
             await msg.message.delete();
-            let messageEmbed: MessageEmbed = new MessageEmbed();
+            let messageEmbed: EmbedBuilder = new EmbedBuilder();
             messageEmbed.setTitle("Placeholder");
             messageEmbed.setDescription("The bot is currently reposting all alerts");
             messageEmbed.setColor([Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)]);
@@ -416,10 +415,10 @@ export class AlertHandler {
         return str.replace(/<[^>]*>/g, "");
     }
 
-    private static countEmbeds(...embeds: MessageEmbed[]) {
+    private static countEmbeds(...embeds: EmbedBuilder[]) {
         let counter = 0;
         for (let embed of embeds) {
-            counter += embed.length;
+            counter += embed.data.fields.length;
         }
         return counter;
     }
@@ -432,8 +431,8 @@ export class AlertHandler {
         await this.expire();
         await this.getAlerts();
         let alerts = await Alerts.getAll();
-        let embed: MessageEmbed = new MessageEmbed();
-        let extraEmbeds: MessageEmbed[] = [];
+        let embed: EmbedBuilder = new EmbedBuilder();
+        let extraEmbeds: EmbedBuilder[] = [];
         embed.setTitle("Active TTC Alerts");
         embed.setDescription("Actively watching for TTC Alerts. \n" +
             "You can help contribute by using commands to add something.\n" +
@@ -450,12 +449,12 @@ export class AlertHandler {
             if (content === "") content = "No closures at this time.";
         }
         if (content.length > 1000 || msg) {
-            let extraEmbed: MessageEmbed = new MessageEmbed();
+            let extraEmbed: EmbedBuilder = new EmbedBuilder();
             extraEmbed.setTitle("⛔ Closures ⛔");
             extraEmbed.setDescription("Too Many Closures to fit in one embed.");
             for (let c of closures) {
                 let line: string = this.lineEmotes[c.Line] ? this.lineEmotes[c.Line].toString() : c.Line;
-                extraEmbed.addField(`Line ${line}`, `${this.replaceBadString(c.Message)} (${c.User})`, true);
+                extraEmbed.addFields({name: `Line ${line}`, value: `${this.replaceBadString(c.Message)} (${c.User})`, inline: true});
             }
             if (closures.length === 0) {
                 content = "No closures at this time.";
@@ -470,7 +469,7 @@ export class AlertHandler {
             else
                 extraEmbeds.push(extraEmbed);
         }
-        embed.addField("⛔ Closures ⛔", content, content === "No closures at this time." || content === "See extra embed below for closures.");
+        embed.addFields({name: "⛔ Closures ⛔", value: content, inline: content === "No closures at this time." || content === "See extra embed below for closures."});
         if (this.countEmbeds(embed, ...extraEmbeds) + content.length > 5500) {
             let newMsg = await this.channel.send("TOO MANY ALERTS TO FIT IN ONE MESSAGE. REPOSTING TO KEEP THINGS ORGANIZED");
             this.extraMessages.push({message: newMsg, isFor: AlertType.CLOSURE});
@@ -489,12 +488,12 @@ export class AlertHandler {
             if (content === "") content = "No delays at this time.";
         }
         if (content.length > 1000 || msg) {
-            let extraEmbed: MessageEmbed = new MessageEmbed();
+            let extraEmbed: EmbedBuilder = new EmbedBuilder();
             extraEmbed.setTitle("⏳ Delays ⏳");
             extraEmbed.setDescription("Too Many Delays to fit in one embed.");
             for (let d of delays) {
                 let line: string = this.lineEmotes[d.Line] ? this.lineEmotes[d.Line].toString() : d.Line;
-                extraEmbed.addField(`${this.yellowL} Line ${line}: ${this.yellowL} (${d.User})`, ` ${this.replaceBadString(d.Message)}`)
+                extraEmbed.addFields({name: `${this.yellowL} Line ${line}: ${this.yellowL} (${d.User})`, value:` ${this.replaceBadString(d.Message)}`})
             }
             if (delays.length === 0) {
                 content = "No delays at this time.";
@@ -510,7 +509,7 @@ export class AlertHandler {
             else
                 extraEmbeds.push(extraEmbed);
         }
-        embed.addField("⏳ Delays ⏳", content, content === "No delays at this time." || content === "See extra embed for delays.");
+        embed.addFields({name: "⏳ Delays ⏳", value: content, inline: content === "No delays at this time." || content === "See extra embed for delays."});
         if (this.countEmbeds(embed, ...extraEmbeds) + content.length > 5500) {
             let newMsg = await this.channel.send("TOO MANY ALERTS TO FIT IN ONE MESSAGE. REPOSTING TO KEEP THINGS ORGANIZED");
             this.extraMessages.push({message: newMsg, isFor: AlertType.DELAY});
@@ -529,12 +528,12 @@ export class AlertHandler {
             if (content === "") content = "No detours at this time.";
         }
         if (content.length > 1000 || msg) {
-            let extraEmbed: MessageEmbed = new MessageEmbed();
+            let extraEmbed: EmbedBuilder = new EmbedBuilder();
             extraEmbed.setTitle("🚦 Detours 🚦");
             extraEmbed.setDescription("Too Many Detours to fit in one embed.");
             for (let d of detours) {
                 let line: string = this.lineEmotes[d.Line] ? this.lineEmotes[d.Line].toString() : d.Line;
-                extraEmbed.addField(`${this.yellowL} Line ${line}: ${this.yellowL} (${d.User})`, ` ${this.replaceBadString(d.Message)}`)
+                extraEmbed.addFields({name: `${this.yellowL} Line ${line}: ${this.yellowL} (${d.User})`, value: ` ${this.replaceBadString(d.Message)}`})
             }
             if (detours.length === 0) {
                 content = "No detours at this time.";
@@ -550,7 +549,7 @@ export class AlertHandler {
             else
                 extraEmbeds.push(extraEmbed);
         }
-        embed.addField("🚦 Detours 🚦", content, content === "No detours at this time." || content === "See extra embed for detours.");
+        embed.addFields({name: "🚦 Detours 🚦", value: content, inline: content === "No detours at this time." || content === "See extra embed for detours."});
         if (this.countEmbeds(embed, ...extraEmbeds) + content.length > 5500) {
             let newMsg = await this.channel.send("TOO MANY ALERTS TO FIT IN ONE MESSAGE. REPOSTING TO KEEP THINGS ORGANIZED");
             this.extraMessages.push({message: newMsg, isFor: AlertType.DETOUR});
@@ -569,12 +568,12 @@ export class AlertHandler {
             if (content === "") content = "No other alerts at this time.";
         }
         if (content.length > 1000 || msg) {
-            let extraEmbed: MessageEmbed = new MessageEmbed();
+            let extraEmbed: EmbedBuilder = new EmbedBuilder();
             extraEmbed.setTitle("❓ Other ❓");
             extraEmbed.setDescription("Too Many Other Alerts to fit in one embed.");
             for (let o of others) {
                 let line: string = this.lineEmotes[o.Line] ? this.lineEmotes[o.Line].toString() : o.Line;
-                extraEmbed.addField(`${this.greenL}${line ? " Line " + line + ":" : ""} ${this.greenL} (${o.User})`, ` ${this.replaceBadString(o.Message)}`)
+                extraEmbed.addFields({name: `${this.greenL}${line ? " Line " + line + ":" : ""} ${this.greenL} (${o.User})`, value: ` ${this.replaceBadString(o.Message)}`})
             }
             if (others.length === 0) {
                 content = "No other alerts at this time.";
@@ -590,7 +589,7 @@ export class AlertHandler {
             else
                 extraEmbeds.push(extraEmbed);
         }
-        embed.addField("❓ Other ❓", content, content === "No other alerts at this time." || content === "See extra embed for other alerts.");
+        embed.addFields({name: "❓ Other ❓", value: content, inline: content === "No other alerts at this time." || content === "See extra embed for other alerts."});
         if (this.countEmbeds(embed, ...extraEmbeds) + content.length > 5500) {
             let newMsg = await this.channel.send("TOO MANY ALERTS TO FIT IN ONE MESSAGE. REPOSTING TO KEEP THINGS ORGANIZED");
             this.extraMessages.push({message: newMsg, isFor: AlertType.OTHER});
@@ -612,15 +611,15 @@ export class AlertHandler {
             if (content === "") content = "No slow zones reported at this time.";
         }
         if (content.length > 1000 || msg) {
-            let extraEmbed: MessageEmbed = new MessageEmbed();
+            let extraEmbed: EmbedBuilder = new EmbedBuilder();
             extraEmbed.setTitle("🦺 Slow Zones 🦺");
             extraEmbed.setDescription("Too Many Slow Zones to fit in one embed.");
             for (let s of slowZones) {
                 let line: string = this.lineEmotes[s.Line] ? this.lineEmotes[s.Line].toString() : s.Line;
-                extraEmbed.addField(`${this.yellowL} Line ${line}: ${this.replaceBadString(s.Message)} ${this.yellowL}`,
-                    `Reported by ${s.User}\n` +
+                extraEmbed.addFields({name: `${this.yellowL} Line ${line}: ${this.replaceBadString(s.Message)} ${this.yellowL}`,
+                    value: `Reported by ${s.User}\n` +
                     `**Started: <t:${Math.floor(s.Started.getTime() / 1000)}:R>**\n` +
-                    `**Expires: <t:${Math.floor(s.Expires.getTime() / 1000)}:R>**\n`)
+                    `**Expires: <t:${Math.floor(s.Expires.getTime() / 1000)}:R>**\n`})
             }
             if (slowZones.length === 0) {
                 content = "No slow zones reported at this time.";
@@ -636,7 +635,7 @@ export class AlertHandler {
             else
                 extraEmbeds.push(extraEmbed);
         }
-        embed.addField("🦺 Slow Zones 🦺", content, content === "No slow zones reported at this time." || content === "See extra embed for slow zones.");
+        embed.addFields({name: "🦺 Slow Zones 🦺", value: content, inline: content === "No slow zones reported at this time." || content === "See extra embed for slow zones."});
         if (this.countEmbeds(embed, ...extraEmbeds) + content.length > 5500) {
             let newMsg = await this.channel.send("TOO MANY ALERTS TO FIT IN ONE MESSAGE. REPOSTING TO KEEP THINGS ORGANIZED");
             this.extraMessages.push({message: newMsg, isFor: AlertType.CONSTRUCTION});
@@ -660,7 +659,7 @@ export class AlertHandler {
                     `**Started: <t:${Math.floor(new Date(m.Started).getTime() / 1000)}:R>**\n` +
                     `**Expires: ${m.Expires ? '<t:' + Math.floor(new Date(m.Expires).getTime() / 1000) + ':R>' : 'Until Further Notice'}**\n` +
                     `Message: ${dedicatedMessage.url}\n`;
-            let eb = new MessageEmbed();
+            let eb = new EmbedBuilder();
             eb.setTitle(`${emotes[0]} ${m.Message} ${emotes[1]}`);
             eb.setDescription(`**Started: <t:${Math.floor(new Date(m.Started).getTime() / 1000)}:R>**\n` +
                 `**Expires: ${m.Expires ? '<t:' + Math.floor(new Date(m.Expires).getTime() / 1000) + ':R>' : 'Until Further Notice'}**\n` +
@@ -670,14 +669,14 @@ export class AlertHandler {
                 let emotes = this.getEmojis(p.alertType);
                 let typeEmote = emotes[0];
                 let typeOffEmote = emotes[1];
-                eb.addField(`${typeEmote} ${p.message} ${typeOffEmote}`,
-                    `Reported by ${p.user} <t:${Math.floor(new Date(p.time).getTime() / 1000)}:R>`, false);
+                eb.addFields({name: `${typeEmote} ${p.message} ${typeOffEmote}`,
+                    value: `Reported by ${p.user} <t:${Math.floor(new Date(p.time).getTime() / 1000)}:R>`, inline: false});
             }
             await dedicatedMessage.edit({embeds: [eb]});
         }
         if (content === "") content = "No minor alerts at this time.";
         if (content.length > 1000 || msg) {
-            let messageEmbed: MessageEmbed = new MessageEmbed();
+            let messageEmbed: EmbedBuilder = new EmbedBuilder();
             messageEmbed.setTitle("⚠️ Minor Alerts ⚠️");
             messageEmbed.setDescription("Too Many Minor Alerts to fit in one embed.");
             for (let m of minors) {
@@ -685,12 +684,12 @@ export class AlertHandler {
                 let dedicatedMessage: Message = await DiscordFetchHelpers.findMessage(client, this.channel, m.Discord_Message);
                 let status = m.Points.length > 0 ? m.Points[m.Points.length - 1].alertType : AlertType.MINOR;
                 let emotes = this.getEmojis(status);
-                messageEmbed.addField(`**${emotes[0]} ${this.replaceBadString(m.Message)} ${emotes[1]}**`,
-                    `Reported by ${m.User}\n` +
+                messageEmbed.addFields({name: `**${emotes[0]} ${this.replaceBadString(m.Message)} ${emotes[1]}**`,
+                    value: `Reported by ${m.User}\n` +
                     `**Line ${line}**\n` +
                     `**Started: <t:${Math.floor(new Date(m.Started).getTime() / 1000)}:R>**\n` +
                     `**Expires: ${m.Expires ? '<t:' + Math.floor(new Date(m.Expires).getTime() / 1000) + ':R>' : 'Until Further Notice'}**\n` +
-                    `Message: ${dedicatedMessage.url}\n`);
+                    `Message: ${dedicatedMessage.url}\n`});
             }
             if (minors.length === 0) {
                 content = "No minor alerts at this time.";
@@ -706,7 +705,7 @@ export class AlertHandler {
             else
                 extraEmbeds.push(messageEmbed);
         }
-        embed.addField("⚠️ Minor Alerts ⚠️", content, content === "No minor alerts at this time." || content === "See extra embed for minor alerts.");
+        embed.addFields({name: "⚠️ Minor Alerts ⚠️", value: content, inline: content === "No minor alerts at this time." || content === "See extra embed for minor alerts."});
         if (this.countEmbeds(embed, ...extraEmbeds) + content.length > 5500) {
             let newMsg = await this.channel.send("TOO MANY ALERTS TO FIT IN ONE MESSAGE. REPOSTING TO KEEP THINGS ORGANIZED");
             this.extraMessages.push({message: newMsg, isFor: AlertType.MINOR});
@@ -728,7 +727,7 @@ export class AlertHandler {
                     `**Started: <t:${Math.floor(new Date(m.Started).getTime() / 1000)}:R>**\n` +
                     `**Expires: ${m.Expires ? '<t:' + Math.floor(new Date(m.Expires).getTime() / 1000) + ':R>' : 'Until Further Notice'}**\n` +
                     `Message: ${dedicatedMessage.url}\n`;
-            let eb = new MessageEmbed();
+            let eb = new EmbedBuilder();
             eb.setTitle(`${emotes[0]} ${m.Message} ${emotes[1]}`);
             eb.setDescription(`**Started: <t:${Math.floor(new Date(m.Started).getTime() / 1000)}:R>**\n` +
                 `**Expires: ${m.Expires ? '<t:' + Math.floor(new Date(m.Expires).getTime() / 1000) + ':R>' : 'Until Further Notice'}**\n` +
@@ -738,14 +737,14 @@ export class AlertHandler {
                 let emotes = this.getEmojis(p.alertType);
                 let typeEmote = emotes[0];
                 let typeOffEmote = emotes[1];
-                eb.addField(`${typeEmote} ${p.message} ${typeOffEmote}`,
-                    `Reported by ${p.user} <t:${Math.floor(new Date(p.time).getTime() / 1000)}:R>`, false);
+                eb.addFields({name: `${typeEmote} ${p.message} ${typeOffEmote}`,
+                    value: `Reported by ${p.user} <t:${Math.floor(new Date(p.time).getTime() / 1000)}:R>`, inline: false});
             }
             await dedicatedMessage.edit({embeds: [eb]});
         }
         if (content === "") content = "No major alerts at this time.";
         if (content.length > 1000 || msg) {
-            let messageEmbed: MessageEmbed = new MessageEmbed();
+            let messageEmbed: EmbedBuilder = new EmbedBuilder();
             messageEmbed.setTitle("🚨 Major Alerts 🚨");
             messageEmbed.setDescription("Too Many Major Alerts to fit in one embed.");
             for (let m of majors) {
@@ -753,12 +752,12 @@ export class AlertHandler {
                 let dedicatedMessage: Message = await DiscordFetchHelpers.findMessage(client, this.channel, m.Discord_Message);
                 let status = m.Points.length > 0 ? m.Points[m.Points.length - 1].alertType : m.Type;
                 let emotes = this.getEmojis(status);
-                messageEmbed.addField(`**${emotes[0]} ${this.replaceBadString(m.Message)} ${emotes[1]}**`,
-                    `Reported by ${m.User}\n` +
+                messageEmbed.addFields({name: `**${emotes[0]} ${this.replaceBadString(m.Message)} ${emotes[1]}**`,
+                    value: `Reported by ${m.User}\n` +
                     `**Line ${line}**\n` +
                     `**Started: <t:${Math.floor(new Date(m.Started).getTime() / 1000)}:R>**\n` +
                     `**Expires: ${m.Expires ? '<t:' + Math.floor(new Date(m.Expires).getTime() / 1000) + ':R>' : 'Until Further Notice'}**\n` +
-                    `Message: ${dedicatedMessage.url}\n`);
+                    `Message: ${dedicatedMessage.url}\n`});
             }
             if (majors.length === 0) {
                 content = "No major alerts at this time.";
@@ -774,15 +773,15 @@ export class AlertHandler {
             else
                 extraEmbeds.push(messageEmbed);
         }
-        embed.addField("🚨 Major Alerts 🚨", content, content === "No major alerts at this time." || content === "See extra embed for major alerts.");
+        embed.addFields({name: "🚨 Major Alerts 🚨", value: content, inline: content === "No major alerts at this time." || content === "See extra embed for major alerts."});
         if (this.countEmbeds(embed, ...extraEmbeds) + content.length > 5500) {
             let newMsg = await this.channel.send("TOO MANY ALERTS TO FIT IN ONE MESSAGE. REPOSTING TO KEEP THINGS ORGANIZED");
             this.extraMessages.push({message: newMsg, isFor: AlertType.MAJOR});
             console.error("REPOSTING TO KEEP THINGS ORGANIZED");
             return this.init();
         }
-        embed.footer = {text: "Last Updated: "};
-        embed.timestamp = Date.now();
+        embed.setFooter({text: "Last Updated: "});
+        embed.setTimestamp(Date.now())
         // Pick a random colour for the embed
         embed.setColor([Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)]);
         // console.log(embed, embed.fields);
