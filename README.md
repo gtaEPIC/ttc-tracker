@@ -90,7 +90,7 @@ There are no tests for this project, so please make sure to test your changes th
 Updates to this project will be used in the T2P Films server.<br>
 
 ## Planned Features
-- [ ] Add Line 1 and 4 to NTAS (https://github.com/gtaEPIC/ttc-tracker/issues/1)
+- [X] Add Line 1 and 4 to NTAS (https://github.com/gtaEPIC/ttc-tracker/issues/1)
 - [ ] Add a vehicle tracker (https://github.com/gtaEPIC/ttc-tracker/issues/2)
 - [ ] Add a next bus tracker (https://github.com/gtaEPIC/ttc-tracker/issues/3)
 
