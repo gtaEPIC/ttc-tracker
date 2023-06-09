@@ -1,7 +1,7 @@
 # TTC Tracker
 ## Description
 TTC Tracker is a Discord bot intended for the T2P Films server.
-At the moment it only track service alerts and has a NTAS (Next Train Arrival System) feature for Line 2.
+At the moment it only track service alerts and has a NTAS (Next Train Arrival System) for lines 1, 2 and 4.
 
 ## Installation
 1. Clone the repository
