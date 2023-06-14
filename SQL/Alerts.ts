@@ -344,40 +344,44 @@ export class AlertHandler {
 
     static async getAlerts() {
         // Make a GET request to https://alerts.ttc.ca/api/alerts/live-alerts with axios
-        let response = await axios.get("https://alerts.ttc.ca/api/alerts/list");
-        let alerts: LiveAlertsData = response.data;
-        let routeAlerts: LiveAlertData[] = alerts.routes;
-        let accessibilityAlerts: LiveAlertData[] = alerts.accessibility;
-        let generalAlerts: LiveAlertData[] = alerts.generalCustom || alerts.siteWide || alerts.siteWideCustom || [];
+        try {
+            let response = await axios.get("https://alerts.ttc.ca/api/alerts/list");
+            let alerts: LiveAlertsData = response.data;
+            let routeAlerts: LiveAlertData[] = alerts.routes;
+            let accessibilityAlerts: LiveAlertData[] = alerts.accessibility;
+            let generalAlerts: LiveAlertData[] = alerts.generalCustom || alerts.siteWide || alerts.siteWideCustom || [];
 
-        let allAlerts: LiveAlertData[] = routeAlerts.concat(accessibilityAlerts).concat(generalAlerts);
+            let allAlerts: LiveAlertData[] = routeAlerts.concat(accessibilityAlerts).concat(generalAlerts);
 
-        for (let alert of allAlerts) {
-            // Try to match with an existing alert
-            let existing = await Alerts.get(parseInt(alert.id));
-            // console.log(alert, existing)
-            if (!existing) {
-                // console.log(alert)
-                existing = new Alerts({
-                    Alert_ID: parseInt(alert.id),
-                    Discord_Message: null,
-                    Expires: this.determineExpire(new Date(alert.activePeriod.start), new Date(alert.activePeriod.end)),
-                    Message: alert.title === "WEBSITE" ? alert.description : alert.accessibility === "Elevator" ? alert.headerText :  alert.title,
-                    Points: "[]",
-                    Started: new Date(alert.activePeriod.start),
-                    Type: this.determineType(alert.effect, alert.accessibility),
-                    Type_Name: alert.effectDesc,
-                    User: "AUTO",
-                    Line: alert.route ? alert.route : null,
-                });
-                await existing.save()
-            }else {
-                existing.Expires = this.determineExpire(new Date(alert.activePeriod.start), new Date(alert.activePeriod.end));
-                existing.Type = this.determineType(alert.effect, alert.accessibility);
-                existing.Type_Name = alert.effectDesc;
-                existing.Message = alert.title === "WEBSITE" ? alert.description : alert.accessibility === "Elevator" ? alert.headerText :  alert.title;
-                await existing.save();
+            for (let alert of allAlerts) {
+                // Try to match with an existing alert
+                let existing = await Alerts.get(parseInt(alert.id));
+                // console.log(alert, existing)
+                if (!existing) {
+                    // console.log(alert)
+                    existing = new Alerts({
+                        Alert_ID: parseInt(alert.id),
+                        Discord_Message: null,
+                        Expires: this.determineExpire(new Date(alert.activePeriod.start), new Date(alert.activePeriod.end)),
+                        Message: alert.title === "WEBSITE" ? alert.description : alert.accessibility === "Elevator" ? alert.headerText : alert.title,
+                        Points: "[]",
+                        Started: new Date(alert.activePeriod.start),
+                        Type: this.determineType(alert.effect, alert.accessibility),
+                        Type_Name: alert.effectDesc,
+                        User: "AUTO",
+                        Line: alert.route ? alert.route : null,
+                    });
+                    await existing.save()
+                } else {
+                    existing.Expires = this.determineExpire(new Date(alert.activePeriod.start), new Date(alert.activePeriod.end));
+                    existing.Type = this.determineType(alert.effect, alert.accessibility);
+                    existing.Type_Name = alert.effectDesc;
+                    existing.Message = alert.title === "WEBSITE" ? alert.description : alert.accessibility === "Elevator" ? alert.headerText : alert.title;
+                    await existing.save();
+                }
             }
+        } catch (e) {
+            console.error(e);
         }
     }
 
@@ -788,7 +792,7 @@ export class AlertHandler {
         let embeds = [embed];
         extraEmbeds.forEach(e => embeds.push(e));
         console.log("Embed counter: " + this.countEmbeds(embed, ...extraEmbeds));
-        await this.message.edit({embeds: embeds});
+        this.message.edit({embeds: embeds}).catch(console.error);
     }
 
 }
