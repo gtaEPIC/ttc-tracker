@@ -169,30 +169,38 @@ export class NTAS extends Commands {
     }
 
     async execute(interaction: CommandInteraction, args) {
-        let station: string = args["station"];
-        station = station.toLowerCase();
-        let stationCode: string[] = [];
-        for (let code of this.stationCodes) {
-            if (code.name.toLowerCase() === station) {
-                stationCode = code.value.split(",");
-                break;
+        try {
+            let station: string = args["station"];
+            station = station.toLowerCase();
+            let stationCode: string[] = [];
+            for (let code of this.stationCodes) {
+                if (code.name.toLowerCase() === station) {
+                    stationCode = code.value.split(",");
+                    break;
+                }
             }
-        }
-        if (stationCode.length === 0) {
-            return interaction.reply({
-                content: "Station not found. Check your spelling and try again.",
+            if (stationCode.length === 0) {
+                return interaction.reply({
+                    content: "Station not found. Check your spelling and try again.",
+                    ephemeral: true
+                });
+            } else {
+                let garbage: Garbage = {
+                    message: <Message>await interaction.reply({content: "Loading...", fetchReply: true}),
+                    interaction: interaction,
+                    station: station,
+                    stationCode: stationCode,
+                    count: -1
+                }
+                NTAS.activeMessages[garbage.message.id] = garbage;
+                NTAS.updateMessage(interaction, station, stationCode, garbage.message, garbage.count++).then();
+            }
+        } catch (e) {
+            console.error(e);
+            interaction.reply({
+                content: "Something went wrong. Please try again. (" + e.message + ")",
                 ephemeral: true
-            });
-        } else {
-            let garbage: Garbage = {
-                message: <Message>await interaction.reply({content: "Loading...", fetchReply: true}),
-                interaction: interaction,
-                station: station,
-                stationCode: stationCode,
-                count: -1
-            }
-            NTAS.activeMessages[garbage.message.id] = garbage;
-            NTAS.updateMessage(interaction, station, stationCode, garbage.message, garbage.count++).then();
+            }).catch(console.error);
         }
     }
 }

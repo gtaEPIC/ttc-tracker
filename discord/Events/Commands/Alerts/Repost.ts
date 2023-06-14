@@ -13,10 +13,18 @@ export default class Repost extends Commands {
     }
 
     execute(interaction: CommandInteraction, args) {
-        let oldMessage = AlertHandler.getMessage();
-        AlertHandler.init().then();
-        oldMessage.delete().then();
-        interaction.reply({content: "Reposted alerts list", ephemeral: true}).then();
+        try {
+            let oldMessage = AlertHandler.getMessage();
+            AlertHandler.init().then();
+            oldMessage.delete().then();
+            interaction.reply({content: "Reposted alerts list", ephemeral: true}).then();
+        } catch (e) {
+            console.error(e);
+            interaction.reply({
+                content: "Something went wrong. Please try again. (" + e.message + ")",
+                ephemeral: true
+            }).catch(console.error);
+        }
     }
 
 }
